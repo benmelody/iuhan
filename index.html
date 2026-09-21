@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>I love you in every universe ❤️</title>
-    <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Poppins:wght@300;400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -117,5 +117,384 @@
             }
         }
 
+        /* Nút hộp thư bên phải */
+        .mailbox-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: rgba(255, 117, 140, 0.25);
+            border: 2px solid rgba(255, 117, 140, 0.6);
+            color: #fff;
+            padding: 12px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            z-index: 30;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 0 20px rgba(255, 117, 140, 0.3);
+            transition: all 0.3s ease;
+            animation: pulseBtn 2s infinite alternate;
+        }
+
+        .mailbox-btn:hover {
+            background: rgba(255, 117, 140, 0.5);
+            transform: scale(1.05);
+            box-shadow: 0 0 25px rgba(255, 117, 140, 0.6);
+        }
+
+        @keyframes pulseBtn {
+            0% { transform: scale(1); box-shadow: 0 0 15px rgba(255, 117, 140, 0.3); }
+            100% { transform: scale(1.06); box-shadow: 0 0 25px rgba(255, 117, 140, 0.7); }
+        }
+
+        /* Modal / Lá thư hiển thị */
+        .letter-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.4s ease;
+        }
+
+        .letter-modal.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .letter-content {
+            background: linear-gradient(135deg, #fff0f3, #ffe3e6);
+            color: #4a2e35;
+            width: 90%;
+            max-width: 450px;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 15px 40px rgba(255, 105, 180, 0.4);
+            transform: scale(0.7) translateY(30px);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            text-align: center;
+            border: 2px dashed #ff758c;
+        }
+
+        .letter-modal.show .letter-content {
+            transform: scale(1) translateY(0);
+        }
+
+        .letter-content h2 {
+            font-family: 'Pacifico', cursive;
+            color: #ff3366;
+            margin-bottom: 15px;
+            font-size: 1.8rem;
+        }
+
+        .letter-content p {
+            font-size: 1.05rem;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            text-align: left;
+            white-space: pre-line;
+        }
+
+        .close-btn {
+            background: #ff3366;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.95rem;
+            transition: background 0.3s;
+        }
+
+        .close-btn:hover {
+            background: #e60039;
+        }
+
         canvas {
-            display:
+            display: block;
+            position: relative;
+            z-index: 2;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="cosmic-bg"></div>
+
+    <div class="message">
+        <h1>I love you in every universe</h1>
+        <div class="subtitle">Anh yêu em... Cho dù ở vũ trụ nào anh vẫn yêu em</div>
+    </div>
+
+    <button class="mailbox-btn" id="mailboxBtn">
+        💌 Hộp Thư
+    </button>
+
+    <div class="letter-modal" id="letterModal">
+        <div class="letter-content">
+            <h2>Gửi công chúa của anh ❤️</h2>
+            <p>Hôm nay sinh nhật em, anh chúc em luôn xinh đẹp và học giỏi nè chúc em tuổi mới có tất cả trừ vất vả nhe. Anh chỉ muốn nói là anh iu em nhiều lắm á 🥺❤️</p>
+            <button class="close-btn" id="closeBtn">Đóng thư</button>
+        </div>
+    </div>
+
+    <canvas id="canvas"></canvas>
+
+    <script>
+        // Xử lý mở/đóng hộp thư
+        const mailboxBtn = document.getElementById('mailboxBtn');
+        const letterModal = document.getElementById('letterModal');
+        const closeBtn = document.getElementById('closeBtn');
+
+        mailboxBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            letterModal.classList.add('show');
+        });
+
+        closeBtn.addEventListener('click', () => {
+            letterModal.classList.remove('show');
+        });
+
+        letterModal.addEventListener('click', (e) => {
+            if (e.target === letterModal) {
+                letterModal.classList.remove('show');
+            }
+        });
+
+        // Tạo hiệu ứng trái tim bay lơ lửng dưới nền
+        function createFloatingHeart() {
+            const heart = document.createElement('div');
+            heart.classList.add('floating-heart');
+            heart.innerHTML = '❤️';
+            heart.style.left = Math.random() * 100 + 'vw';
+            heart.style.animationDuration = (Math.random() * 4 + 4) + 's';
+            heart.style.fontSize = (Math.random() * 15 + 12) + 'px';
+            document.body.appendChild(heart);
+
+            setTimeout(() => {
+                heart.remove();
+            }, 8000);
+        }
+        setInterval(createFloatingHeart, 500);
+
+        // Hiệu ứng pháo hoa trái tim khi click chuột
+        window.addEventListener('click', (e) => {
+            if (e.target.closest('#mailboxBtn') || e.target.closest('.letter-content')) return;
+
+            for (let i = 0; i < 8; i++) {
+                const heart = document.createElement('div');
+                heart.classList.add('click-heart');
+                heart.innerHTML = ['💖', '✨', '❤️', '💕'][Math.floor(Math.random() * 4)];
+                heart.style.left = e.clientX + 'px';
+                heart.style.top = e.clientY + 'px';
+
+                const angle = Math.random() * Math.PI * 2;
+                const distance = Math.random() * 120 + 40;
+                const dx = Math.cos(angle) * distance;
+                const dy = Math.sin(angle) * distance;
+
+                heart.style.setProperty('--dx', dx + 'px');
+                heart.style.setProperty('--dy', dy + 'px');
+
+                document.body.appendChild(heart);
+
+                setTimeout(() => {
+                    heart.remove();
+                }, 1000);
+            }
+        });
+
+        // Câu thơ rơi ngẫu nhiên
+        const messages = [
+            "Em là vì sao sáng nhất",
+            "Cảm ơn tình yêu của em",
+            "Em là tất cả trong anh",
+            "Mỗi khoảnh khắc có em",
+            "Nơi nào có em là nơi đó có anh",
+            "Yêu em bằng cả trái tim",
+            "Tình yêu bắt đầu từ ánh mắt"
+        ];
+
+        function createFallingText() {
+            const text = messages[Math.floor(Math.random() * messages.length)];
+            const x = Math.random() * (window.innerWidth - 200);
+            
+            const el = document.createElement('div');
+            el.className = 'falling-text';
+            el.innerText = text;
+            el.style.left = x + 'px';
+            el.style.top = '-30px';
+            document.body.appendChild(el);
+
+            let posY = -30;
+            let opacity = 0;
+            let speed = Math.random() * 0.5 + 0.5;
+
+            const animateText = () => {
+                posY += speed;
+                if (posY < window.innerHeight / 3) {
+                    opacity += 0.02;
+                } else {
+                    opacity -= 0.01;
+                }
+                el.style.top = posY + 'px';
+                el.style.opacity = Math.max(0, opacity);
+
+                if (opacity > 0) {
+                    requestAnimationFrame(animateText);
+                } else {
+                    el.remove();
+                }
+            };
+            requestAnimationFrame(animateText);
+        }
+
+        setInterval(createFallingText, 4000);
+
+        // Canvas vẽ khung trái tim trung tâm và sao trời
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+
+        const stars = [];
+        const heartStars = [];
+        const meteors = [];
+
+        let mouse = { x: width / 2, y: height / 2 };
+
+        function createHeartStars(count = 1200) {
+            for (let i = 0; i < count; i++) {
+                const t = Math.PI * 2 * Math.random();
+                const x = 16 * Math.pow(Math.sin(t), 3);
+                const y = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
+                
+                const scale = Math.min(width, height) / 38;
+                const targetX = width / 2 + x * scale;
+                const targetY = height / 2 + y * scale + 20;
+
+                heartStars.push({
+                    x: Math.random() * width,
+                    y: Math.random() * height,
+                    originX: targetX,
+                    originY: targetY,
+                    size: Math.random() * 2 + 1,
+                    color: `hsl(${Math.random() * 30 + 330}, 100%, 75%)`,
+                    brightness: Math.random(),
+                    speed: Math.random() * 0.03 + 0.02
+                });
+            }
+        }
+
+        function createBackgroundStars(count = 300) {
+            for (let i = 0; i < count; i++) {
+                stars.push({
+                    x: Math.random() * width,
+                    y: Math.random() * height,
+                    size: Math.random() * 1.5,
+                    twinkleSpeed: Math.random() * 0.05 + 0.02,
+                    brightness: Math.random()
+                });
+            }
+        }
+
+        function createMeteor() {
+            meteors.push({
+                x: Math.random() * width,
+                y: 0,
+                length: Math.random() * 80 + 40,
+                speed: Math.random() * 6 + 4,
+                angle: Math.PI / 4
+            });
+        }
+
+        setInterval(createMeteor, 2500);
+        createBackgroundStars();
+        createHeartStars();
+
+        window.addEventListener('resize', () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            heartStars.length = 0;
+            createHeartStars();
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+        });
+
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+
+            stars.forEach(star => {
+                star.brightness += star.twinkleSpeed;
+                const opacity = (Math.sin(star.brightness) + 1) / 2;
+                ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
+                ctx.fillRect(star.x, star.y, star.size, star.size);
+            });
+
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+            ctx.lineWidth = 1.5;
+            meteors.forEach((meteor, index) => {
+                const dx = Math.cos(meteor.angle) * meteor.length;
+                const dy = Math.sin(meteor.angle) * meteor.length;
+
+                ctx.beginPath();
+                ctx.moveTo(meteor.x, meteor.y);
+                ctx.lineTo(meteor.x - dx, meteor.y - dy);
+                ctx.stroke();
+
+                meteor.x += Math.cos(meteor.angle) * meteor.speed;
+                meteor.y += Math.sin(meteor.angle) * meteor.speed;
+
+                if (meteor.x > width || meteor.y > height) {
+                    meteors.splice(index, 1);
+                }
+            });
+
+            heartStars.forEach(star => {
+                const dx = star.originX - star.x;
+                const dy = star.originY - star.y;
+                star.x += dx * 0.08;
+                star.y += dy * 0.08;
+
+                const mdx = mouse.x - star.x;
+                const mdy = mouse.y - star.y;
+                const dist = Math.sqrt(mdx * mdx + mdy * mdy);
+                if (dist < 80) {
+                    star.x -= mdx * 0.05;
+                    star.y -= mdy * 0.05;
+                }
+
+                star.brightness += 0.04;
+                ctx.fillStyle = star.color;
+                ctx.shadowBlur = 12;
+                ctx.shadowColor = star.color;
+                ctx.fillRect(star.x, star.y, star.size, star.size);
+                ctx.shadowBlur = 0;
+            });
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    </script>
+</body>
+</html>

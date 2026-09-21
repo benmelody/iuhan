@@ -49,7 +49,6 @@
             font-size: clamp(1.5rem, 3vw, 2.5rem);
             color: #ff758c;
             text-shadow: 0 0 15px rgba(255, 117, 140, 0.8);
-            animation: fadeInMessage 2s ease-in-out forwards;
         }
 
         .subtitle {
@@ -57,8 +56,6 @@
             font-size: clamp(0.9rem, 1.5vw, 1.2rem);
             color: #ffccd5;
             font-style: italic;
-            opacity: 0;
-            animation: fadeInMessage 2s ease-in-out 1s forwards;
         }
 
         .falling-text {
@@ -70,10 +67,8 @@
             opacity: 0;
             pointer-events: none;
             z-index: 5;
-            transition: opacity 1s ease-in-out;
         }
 
-        /* Hiệu ứng trái tim bay từ dưới lên */
         .floating-heart {
             position: absolute;
             bottom: -20px;
@@ -95,7 +90,6 @@
             }
         }
 
-        /* Hiệu ứng pháo hoa trái tim khi click */
         .click-heart {
             position: absolute;
             color: #ff3366;
@@ -117,7 +111,6 @@
             }
         }
 
-        /* Nút hộp thư bên phải */
         .mailbox-btn {
             position: fixed;
             bottom: 30px;
@@ -138,21 +131,13 @@
             backdrop-filter: blur(8px);
             box-shadow: 0 0 20px rgba(255, 117, 140, 0.3);
             transition: all 0.3s ease;
-            animation: pulseBtn 2s infinite alternate;
         }
 
         .mailbox-btn:hover {
             background: rgba(255, 117, 140, 0.5);
             transform: scale(1.05);
-            box-shadow: 0 0 25px rgba(255, 117, 140, 0.6);
         }
 
-        @keyframes pulseBtn {
-            0% { transform: scale(1); box-shadow: 0 0 15px rgba(255, 117, 140, 0.3); }
-            100% { transform: scale(1.06); box-shadow: 0 0 25px rgba(255, 117, 140, 0.7); }
-        }
-
-        /* Modal / Lá thư hiển thị */
         .letter-modal {
             position: fixed;
             top: 0;
@@ -185,7 +170,6 @@
             box-shadow: 0 15px 40px rgba(255, 105, 180, 0.4);
             transform: scale(0.7) translateY(30px);
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            position: relative;
             text-align: center;
             border: 2px dashed #ff758c;
         }
@@ -218,11 +202,6 @@
             cursor: pointer;
             font-family: 'Poppins', sans-serif;
             font-size: 0.95rem;
-            transition: background 0.3s;
-        }
-
-        .close-btn:hover {
-            background: #e60039;
         }
 
         canvas {
@@ -256,7 +235,6 @@
     <canvas id="canvas"></canvas>
 
     <script>
-        // Xử lý mở/đóng hộp thư
         const mailboxBtn = document.getElementById('mailboxBtn');
         const letterModal = document.getElementById('letterModal');
         const closeBtn = document.getElementById('closeBtn');
@@ -276,7 +254,6 @@
             }
         });
 
-        // Tạo hiệu ứng trái tim bay lơ lửng dưới nền
         function createFloatingHeart() {
             const heart = document.createElement('div');
             heart.classList.add('floating-heart');
@@ -292,7 +269,6 @@
         }
         setInterval(createFloatingHeart, 500);
 
-        // Hiệu ứng pháo hoa trái tim khi click chuột
         window.addEventListener('click', (e) => {
             if (e.target.closest('#mailboxBtn') || e.target.closest('.letter-content')) return;
 
@@ -319,7 +295,6 @@
             }
         });
 
-        // Câu thơ rơi ngẫu nhiên
         const messages = [
             "Em là vì sao sáng nhất",
             "Cảm ơn tình yêu của em",
@@ -366,7 +341,6 @@
 
         setInterval(createFallingText, 4000);
 
-        // Canvas vẽ khung trái tim trung tâm và sao trời
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
 
@@ -396,8 +370,7 @@
                     originY: targetY,
                     size: Math.random() * 2 + 1,
                     color: `hsl(${Math.random() * 30 + 330}, 100%, 75%)`,
-                    brightness: Math.random(),
-                    speed: Math.random() * 0.03 + 0.02
+                    brightness: Math.random()
                 });
             }
         }
@@ -441,60 +414,4 @@
         });
 
         function animate() {
-            ctx.clearRect(0, 0, width, height);
-
-            stars.forEach(star => {
-                star.brightness += star.twinkleSpeed;
-                const opacity = (Math.sin(star.brightness) + 1) / 2;
-                ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
-                ctx.fillRect(star.x, star.y, star.size, star.size);
-            });
-
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
-            ctx.lineWidth = 1.5;
-            meteors.forEach((meteor, index) => {
-                const dx = Math.cos(meteor.angle) * meteor.length;
-                const dy = Math.sin(meteor.angle) * meteor.length;
-
-                ctx.beginPath();
-                ctx.moveTo(meteor.x, meteor.y);
-                ctx.lineTo(meteor.x - dx, meteor.y - dy);
-                ctx.stroke();
-
-                meteor.x += Math.cos(meteor.angle) * meteor.speed;
-                meteor.y += Math.sin(meteor.angle) * meteor.speed;
-
-                if (meteor.x > width || meteor.y > height) {
-                    meteors.splice(index, 1);
-                }
-            });
-
-            heartStars.forEach(star => {
-                const dx = star.originX - star.x;
-                const dy = star.originY - star.y;
-                star.x += dx * 0.08;
-                star.y += dy * 0.08;
-
-                const mdx = mouse.x - star.x;
-                const mdy = mouse.y - star.y;
-                const dist = Math.sqrt(mdx * mdx + mdy * mdy);
-                if (dist < 80) {
-                    star.x -= mdx * 0.05;
-                    star.y -= mdy * 0.05;
-                }
-
-                star.brightness += 0.04;
-                ctx.fillStyle = star.color;
-                ctx.shadowBlur = 12;
-                ctx.shadowColor = star.color;
-                ctx.fillRect(star.x, star.y, star.size, star.size);
-                ctx.shadowBlur = 0;
-            });
-
-            requestAnimationFrame(animate);
-        }
-
-        animate();
-    </script>
-</body>
-</html>
+            ctx.clearRect(0

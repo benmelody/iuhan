@@ -42,12 +42,13 @@
             z-index: 10;
             width: 100%;
             padding: 0 20px;
+            pointer-events: none;
         }
 
         h1 {
             font-size: clamp(1.5rem, 3vw, 2.5rem);
             color: #ff758c;
-            text-shadow: 0 0 10px rgba(255, 117, 140, 0.8);
+            text-shadow: 0 0 15px rgba(255, 117, 140, 0.8);
             animation: fadeInMessage 2s ease-in-out forwards;
         }
 
@@ -72,219 +73,49 @@
             transition: opacity 1s ease-in-out;
         }
 
+        /* Hiệu ứng trái tim bay từ dưới lên */
+        .floating-heart {
+            position: absolute;
+            bottom: -20px;
+            color: rgba(255, 105, 180, 0.6);
+            font-size: 18px;
+            animation: floatUpHeart linear infinite;
+            z-index: 3;
+            pointer-events: none;
+        }
+
+        @keyframes floatUpHeart {
+            0% {
+                transform: translateY(0) scale(0.6) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-105vh) scale(1.4) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Hiệu ứng pháo hoa trái tim khi click */
+        .click-heart {
+            position: absolute;
+            color: #ff3366;
+            font-size: 22px;
+            animation: flyAway 1s ease-out forwards;
+            pointer-events: none;
+            z-index: 20;
+            text-shadow: 0 0 10px #ff3366;
+        }
+
+        @keyframes flyAway {
+            0% {
+                transform: translate(0, 0) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(var(--dx), var(--dy)) scale(1.8);
+                opacity: 0;
+            }
+        }
+
         canvas {
-            display: block;
-            position: relative;
-            z-index: 2;
-        }
-    </style>
-</head>
-<body>
-
-    <div class="cosmic-bg"></div>
-
-    <div class="message">
-        <h1>I love you in every universe</h1>
-        <div class="subtitle">Anh yêu em... Cho dù ở vũ trụ nào anh vẫn yêu em</div>
-    </div>
-
-    <audio id="bg-music" loop>
-        <source src="song.mp3" type="audio/mpeg">
-    </audio>
-
-    <canvas id="canvas"></canvas>
-
-    <script>
-        const music = document.getElementById('bg-music');
-
-        function playMusicOnce() {
-            music.play().catch(() => {});
-            window.removeEventListener('click', playMusicOnce);
-        }
-        window.addEventListener('click', playMusicOnce);
-
-        const messages = [
-            "Em là vì sao sáng nhất",
-            "Cảm ơn tình yêu của em",
-            "Em là tất cả trong anh",
-            "Mỗi khoảnh khắc có em",
-            "Nơi nào có em là nơi đó có anh",
-            "Yêu em bằng cả trái tim",
-            "Tình yêu bắt đầu từ ánh mắt"
-        ];
-
-        function createFallingText() {
-            const text = messages[Math.floor(Math.random() * messages.length)];
-            const x = Math.random() * (window.innerWidth - 200);
-            
-            const el = document.createElement('div');
-            el.className = 'falling-text';
-            el.innerText = text;
-            el.style.left = x + 'px';
-            el.style.top = '-30px';
-            document.body.appendChild(el);
-
-            let posY = -30;
-            let opacity = 0;
-            let speed = Math.random() * 0.5 + 0.5;
-
-            const animateText = () => {
-                posY += speed;
-                if (posY < window.innerHeight / 3) {
-                    opacity += 0.02;
-                } else {
-                    opacity -= 0.01;
-                }
-                el.style.top = posY + 'px';
-                el.style.opacity = Math.max(0, opacity);
-
-                if (opacity > 0) {
-                    requestAnimationFrame(animateText);
-                } else {
-                    el.remove();
-                }
-            };
-            requestAnimationFrame(animateText);
-        }
-
-        setInterval(createFallingText, 4000);
-
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-
-        let width = canvas.width = window.innerWidth;
-        let height = canvas.height = window.innerHeight;
-
-        const stars = [];
-        const heartStars = [];
-        const meteors = [];
-
-        let mouse = { x: width / 2, y: height / 2 };
-
-        function createHeartStars(count = 1200) {
-            for (let i = 0; i < count; i++) {
-                // Công thức toán học tạo hình trái tim
-                const t = Math.PI * 2 * Math.random();
-                const x = 16 * Math.pow(Math.sin(t), 3);
-                const y = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
-                
-                // Phóng to và căn giữa trái tim
-                const scale = Math.min(width, height) / 38;
-                const targetX = width / 2 + x * scale;
-                const targetY = height / 2 + y * scale + 20; // Dịch xuống một chút cho cân đối
-
-                heartStars.push({
-                    x: Math.random() * width,
-                    y: Math.random() * height,
-                    originX: targetX,
-                    originY: targetY,
-                    size: Math.random() * 2 + 1,
-                    color: `hsl(${Math.random() * 30 + 330}, 100%, 75%)`,
-                    brightness: Math.random(),
-                    speed: Math.random() * 0.03 + 0.02
-                });
-            }
-        }
-
-        function createBackgroundStars(count = 300) {
-            for (let i = 0; i < count; i++) {
-                stars.push({
-                    x: Math.random() * width,
-                    y: Math.random() * height,
-                    size: Math.random() * 1.5,
-                    twinkleSpeed: Math.random() * 0.05 + 0.02,
-                    brightness: Math.random()
-                });
-            }
-        }
-
-        function createMeteor() {
-            meteors.push({
-                x: Math.random() * width,
-                y: 0,
-                length: Math.random() * 80 + 40,
-                speed: Math.random() * 6 + 4,
-                angle: Math.PI / 4
-            });
-        }
-
-        setInterval(createMeteor, 2500);
-        createBackgroundStars();
-        createHeartStars();
-
-        window.addEventListener('resize', () => {
-            width = canvas.width = window.innerWidth;
-            height = canvas.height = window.innerHeight;
-            heartStars.length = 0;
-            createHeartStars();
-        });
-
-        window.addEventListener('mousemove', (e) => {
-            mouse.x = e.clientX;
-            mouse.y = e.clientY;
-        });
-
-        function animate() {
-            ctx.clearRect(0, 0, width, height);
-
-            // Vẽ sao nền
-            stars.forEach(star => {
-                star.brightness += star.twinkleSpeed;
-                const opacity = (Math.sin(star.brightness) + 1) / 2;
-                ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
-                ctx.fillRect(star.x, star.y, star.size, star.size);
-            });
-
-            // Vẽ sao băng
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
-            ctx.lineWidth = 1.5;
-            meteors.forEach((meteor, index) => {
-                const dx = Math.cos(meteor.angle) * meteor.length;
-                const dy = Math.sin(meteor.angle) * meteor.length;
-
-                ctx.beginPath();
-                ctx.moveTo(meteor.x, meteor.y);
-                ctx.lineTo(meteor.x - dx, meteor.y - dy);
-                ctx.stroke();
-
-                meteor.x += Math.cos(meteor.angle) * meteor.speed;
-                meteor.y += Math.sin(meteor.angle) * meteor.speed;
-
-                if (meteor.x > width || meteor.y > height) {
-                    meteors.splice(index, 1);
-                }
-            });
-
-            // Vẽ và hiệu ứng cho các hạt tạo thành trái tim
-            heartStars.forEach(star => {
-                const dx = star.originX - star.x;
-                const dy = star.originY - star.y;
-                star.x += dx * 0.08;
-                star.y += dy * 0.08;
-
-                // Tương tác đẩy nhẹ khi rê chuột qua
-                const mdx = mouse.x - star.x;
-                const mdy = mouse.y - star.y;
-                const dist = Math.sqrt(mdx * mdx + mdy * mdy);
-                if (dist < 80) {
-                    star.x -= mdx * 0.05;
-                    star.y -= mdy * 0.05;
-                }
-
-                star.brightness += 0.04;
-                const alpha = (Math.sin(star.brightness) + 1) / 2 * 0.5 + 0.5;
-
-                ctx.fillStyle = star.color;
-                ctx.shadowBlur = 12;
-                ctx.shadowColor = star.color;
-                ctx.fillRect(star.x, star.y, star.size, star.size);
-                ctx.shadowBlur = 0;
-            });
-
-            requestAnimationFrame(animate);
-        }
-
-        animate();
-    </script>
-</body>
-</html>
+            display:

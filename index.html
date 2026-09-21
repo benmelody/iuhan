@@ -12,9 +12,10 @@
             box-sizing: border-box;
         }
 
-        body {
-            background: radial-gradient(ellipse at center, #1b002b 0%, #050009 100%);
-            height: 100vh;
+        body, html {
+            width: 100%;
+            height: 100%;
+            background: #050009;
             overflow: hidden;
             font-family: 'Poppins', sans-serif;
             cursor: crosshair;
@@ -26,11 +27,18 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: 
-                radial-gradient(circle at 20% 30%, rgba(255, 41, 116, 0.15) 0%, transparent 50%),
-                radial-gradient(circle at 80% 70%, rgba(94, 232, 255, 0.1) 0%, transparent 50%);
+            background: radial-gradient(ellipse at center, #1b002b 0%, #050009 100%);
             z-index: 1;
             pointer-events: none;
+        }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
         }
 
         .message {
@@ -111,17 +119,18 @@
             }
         }
 
+        /* Nút hộp thư góc phải */
         .mailbox-btn {
             position: fixed;
             bottom: 30px;
             right: 30px;
-            background: rgba(255, 117, 140, 0.25);
-            border: 2px solid rgba(255, 117, 140, 0.6);
+            background: rgba(255, 117, 140, 0.3);
+            border: 2px solid rgba(255, 117, 140, 0.8);
             color: #fff;
-            padding: 12px 20px;
+            padding: 12px 22px;
             border-radius: 30px;
             cursor: pointer;
-            z-index: 30;
+            z-index: 100;
             font-family: 'Poppins', sans-serif;
             font-size: 1rem;
             font-weight: 500;
@@ -129,27 +138,29 @@
             align-items: center;
             gap: 8px;
             backdrop-filter: blur(8px);
-            box-shadow: 0 0 20px rgba(255, 117, 140, 0.3);
+            box-shadow: 0 0 20px rgba(255, 117, 140, 0.4);
             transition: all 0.3s ease;
         }
 
         .mailbox-btn:hover {
-            background: rgba(255, 117, 140, 0.5);
-            transform: scale(1.05);
+            background: rgba(255, 117, 140, 0.6);
+            transform: scale(1.08);
+            box-shadow: 0 0 30px rgba(255, 117, 140, 0.8);
         }
 
+        /* Hộp thư / Modal lá thư */
         .letter-modal {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(5px);
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(6px);
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 100;
+            z-index: 1000;
             opacity: 0;
             pointer-events: none;
             transition: all 0.4s ease;
@@ -163,12 +174,12 @@
         .letter-content {
             background: linear-gradient(135deg, #fff0f3, #ffe3e6);
             color: #4a2e35;
-            width: 90%;
-            max-width: 450px;
+            width: 85%;
+            max-width: 420px;
             padding: 30px;
             border-radius: 20px;
-            box-shadow: 0 15px 40px rgba(255, 105, 180, 0.4);
-            transform: scale(0.7) translateY(30px);
+            box-shadow: 0 15px 40px rgba(255, 105, 180, 0.5);
+            transform: scale(0.6) translateY(40px);
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             text-align: center;
             border: 2px dashed #ff758c;
@@ -188,7 +199,7 @@
         .letter-content p {
             font-size: 1.05rem;
             line-height: 1.6;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
             text-align: left;
             white-space: pre-line;
         }
@@ -197,23 +208,25 @@
             background: #ff3366;
             color: white;
             border: none;
-            padding: 8px 20px;
+            padding: 10px 25px;
             border-radius: 20px;
             cursor: pointer;
             font-family: 'Poppins', sans-serif;
             font-size: 0.95rem;
+            font-weight: 500;
+            transition: background 0.3s;
+            box-shadow: 0 4px 15px rgba(255, 51, 102, 0.3);
         }
 
-        canvas {
-            display: block;
-            position: relative;
-            z-index: 2;
+        .close-btn:hover {
+            background: #e60039;
         }
     </style>
 </head>
 <body>
 
     <div class="cosmic-bg"></div>
+    <canvas id="canvas"></canvas>
 
     <div class="message">
         <h1>I love you in every universe</h1>
@@ -232,9 +245,8 @@
         </div>
     </div>
 
-    <canvas id="canvas"></canvas>
-
     <script>
+        // Xử lý sự kiện mở / đóng hộp thư
         const mailboxBtn = document.getElementById('mailboxBtn');
         const letterModal = document.getElementById('letterModal');
         const closeBtn = document.getElementById('closeBtn');
@@ -244,7 +256,8 @@
             letterModal.classList.add('show');
         });
 
-        closeBtn.addEventListener('click', () => {
+        closeBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
             letterModal.classList.remove('show');
         });
 
@@ -254,6 +267,7 @@
             }
         });
 
+        // Tạo trái tim bay lơ lửng dưới nền
         function createFloatingHeart() {
             const heart = document.createElement('div');
             heart.classList.add('floating-heart');
@@ -269,6 +283,7 @@
         }
         setInterval(createFloatingHeart, 500);
 
+        // Hiệu ứng pháo hoa trái tim khi click chuột
         window.addEventListener('click', (e) => {
             if (e.target.closest('#mailboxBtn') || e.target.closest('.letter-content')) return;
 
@@ -295,6 +310,7 @@
             }
         });
 
+        // Lời nhắn rơi ngẫu nhiên
         const messages = [
             "Em là vì sao sáng nhất",
             "Cảm ơn tình yêu của em",
@@ -341,6 +357,7 @@
 
         setInterval(createFallingText, 4000);
 
+        // Khởi tạo Canvas vẽ sao và trái tim trung tâm
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
 
@@ -354,6 +371,7 @@
         let mouse = { x: width / 2, y: height / 2 };
 
         function createHeartStars(count = 1200) {
+            heartStars.length = 0;
             for (let i = 0; i < count; i++) {
                 const t = Math.PI * 2 * Math.random();
                 const x = 16 * Math.pow(Math.sin(t), 3);
@@ -376,6 +394,7 @@
         }
 
         function createBackgroundStars(count = 300) {
+            stars.length = 0;
             for (let i = 0; i < count; i++) {
                 stars.push({
                     x: Math.random() * width,
@@ -404,7 +423,6 @@
         window.addEventListener('resize', () => {
             width = canvas.width = window.innerWidth;
             height = canvas.height = window.innerHeight;
-            heartStars.length = 0;
             createHeartStars();
         });
 
@@ -414,4 +432,63 @@
         });
 
         function animate() {
-            ctx.clearRect(0
+            ctx.clearRect(0, 0, width, height);
+
+            // Vẽ sao nền
+            stars.forEach(star => {
+                star.brightness += star.twinkleSpeed;
+                const opacity = (Math.sin(star.brightness) + 1) / 2;
+                ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
+                ctx.fillRect(star.x, star.y, star.size, star.size);
+            });
+
+            // Vẽ sao băng
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+            ctx.lineWidth = 1.5;
+            meteors.forEach((meteor, index) => {
+                const dx = Math.cos(meteor.angle) * meteor.length;
+                const dy = Math.sin(meteor.angle) * meteor.length;
+
+                ctx.beginPath();
+                ctx.moveTo(meteor.x, meteor.y);
+                ctx.lineTo(meteor.x - dx, meteor.y - dy);
+                ctx.stroke();
+
+                meteor.x += Math.cos(meteor.angle) * meteor.speed;
+                meteor.y += Math.sin(meteor.angle) * meteor.speed;
+
+                if (meteor.x > width || meteor.y > height) {
+                    meteors.splice(index, 1);
+                }
+            });
+
+            // Vẽ các hạt tạo thành trái tim trung tâm
+            heartStars.forEach(star => {
+                const dx = star.originX - star.x;
+                const dy = star.originY - star.y;
+                star.x += dx * 0.08;
+                star.y += dy * 0.08;
+
+                const mdx = mouse.x - star.x;
+                const mdy = mouse.y - star.y;
+                const dist = Math.sqrt(mdx * mdx + mdy * mdy);
+                if (dist < 80) {
+                    star.x -= mdx * 0.05;
+                    star.y -= mdy * 0.05;
+                }
+
+                star.brightness += 0.04;
+                ctx.fillStyle = star.color;
+                ctx.shadowBlur = 12;
+                ctx.shadowColor = star.color;
+                ctx.fillRect(star.x, star.y, star.size, star.size);
+                ctx.shadowBlur = 0;
+            });
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    </script>
+</body>
+</html>

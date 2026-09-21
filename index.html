@@ -113,8 +113,6 @@
             "Tình yêu bắt đầu từ ánh mắt"
         ];
 
-        let fallingTexts = [];
-
         function createFallingText() {
             const text = messages[Math.floor(Math.random() * messages.length)];
             const x = Math.random() * (window.innerWidth - 200);
@@ -162,22 +160,131 @@
         const meteors = [];
 
         let mouse = { x: width / 2, y: height / 2 };
-        let heartScale = 0.8;
 
-        function createHeartStars(count = 1000) {
+        function createHeartStars(count = 1200) {
             for (let i = 0; i < count; i++) {
+                // Công thức toán học tạo hình trái tim
                 const t = Math.PI * 2 * Math.random();
                 const x = 16 * Math.pow(Math.sin(t), 3);
                 const y = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
                 
-                const scale = 18;
-                const targetX = width / 2 + x * scale + (Math.random() - 0.5) * 30;
-                const targetY = height / 2 + y * scale + (Math.random() - 0.5) * 30;
+                // Phóng to và căn giữa trái tim
+                const scale = Math.min(width, height) / 38;
+                const targetX = width / 2 + x * scale;
+                const targetY = height / 2 + y * scale + 20; // Dịch xuống một chút cho cân đối
 
                 heartStars.push({
                     x: Math.random() * width,
                     y: Math.random() * height,
                     originX: targetX,
                     originY: targetY,
-                    size: Math.random() * 2 + 0.5,
-                    color: `hsl(${Math.random() * 40 + 330}, 100%, 75
+                    size: Math.random() * 2 + 1,
+                    color: `hsl(${Math.random() * 30 + 330}, 100%, 75%)`,
+                    brightness: Math.random(),
+                    speed: Math.random() * 0.03 + 0.02
+                });
+            }
+        }
+
+        function createBackgroundStars(count = 300) {
+            for (let i = 0; i < count; i++) {
+                stars.push({
+                    x: Math.random() * width,
+                    y: Math.random() * height,
+                    size: Math.random() * 1.5,
+                    twinkleSpeed: Math.random() * 0.05 + 0.02,
+                    brightness: Math.random()
+                });
+            }
+        }
+
+        function createMeteor() {
+            meteors.push({
+                x: Math.random() * width,
+                y: 0,
+                length: Math.random() * 80 + 40,
+                speed: Math.random() * 6 + 4,
+                angle: Math.PI / 4
+            });
+        }
+
+        setInterval(createMeteor, 2500);
+        createBackgroundStars();
+        createHeartStars();
+
+        window.addEventListener('resize', () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            heartStars.length = 0;
+            createHeartStars();
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+        });
+
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+
+            // Vẽ sao nền
+            stars.forEach(star => {
+                star.brightness += star.twinkleSpeed;
+                const opacity = (Math.sin(star.brightness) + 1) / 2;
+                ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
+                ctx.fillRect(star.x, star.y, star.size, star.size);
+            });
+
+            // Vẽ sao băng
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+            ctx.lineWidth = 1.5;
+            meteors.forEach((meteor, index) => {
+                const dx = Math.cos(meteor.angle) * meteor.length;
+                const dy = Math.sin(meteor.angle) * meteor.length;
+
+                ctx.beginPath();
+                ctx.moveTo(meteor.x, meteor.y);
+                ctx.lineTo(meteor.x - dx, meteor.y - dy);
+                ctx.stroke();
+
+                meteor.x += Math.cos(meteor.angle) * meteor.speed;
+                meteor.y += Math.sin(meteor.angle) * meteor.speed;
+
+                if (meteor.x > width || meteor.y > height) {
+                    meteors.splice(index, 1);
+                }
+            });
+
+            // Vẽ và hiệu ứng cho các hạt tạo thành trái tim
+            heartStars.forEach(star => {
+                const dx = star.originX - star.x;
+                const dy = star.originY - star.y;
+                star.x += dx * 0.08;
+                star.y += dy * 0.08;
+
+                // Tương tác đẩy nhẹ khi rê chuột qua
+                const mdx = mouse.x - star.x;
+                const mdy = mouse.y - star.y;
+                const dist = Math.sqrt(mdx * mdx + mdy * mdy);
+                if (dist < 80) {
+                    star.x -= mdx * 0.05;
+                    star.y -= mdy * 0.05;
+                }
+
+                star.brightness += 0.04;
+                const alpha = (Math.sin(star.brightness) + 1) / 2 * 0.5 + 0.5;
+
+                ctx.fillStyle = star.color;
+                ctx.shadowBlur = 12;
+                ctx.shadowColor = star.color;
+                ctx.fillRect(star.x, star.y, star.size, star.size);
+                ctx.shadowBlur = 0;
+            });
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    </script>
+</body>
+</html>
